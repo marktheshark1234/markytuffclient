@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html style="width:100%;height:100%;background-color:black;">
 	<head>
@@ -54,6 +53,46 @@
 						var s = q.get("server");
 						if(s) window.eaglercraftXOpts.joinServer = s;
 					}
+
+					// ================================
+					// 🔥 TRACKING STARTS HERE
+					// ================================
+
+					let sessionId = crypto.randomUUID();
+					let startTime = Date.now();
+
+					// start session
+					fetch("/api/start", {
+						method: "POST",
+						body: JSON.stringify({ sessionId })
+					});
+
+					// track key inputs
+					document.addEventListener("keydown", (e) => {
+						fetch("/api/input", {
+							method: "POST",
+							body: JSON.stringify({
+								sessionId,
+								key: e.key,
+								time: Date.now() - startTime
+							})
+						});
+					});
+
+					// make endGame globally usable
+					window.endGame = function(score) {
+						fetch("/api/end", {
+							method: "POST",
+							body: JSON.stringify({
+								sessionId,
+								score
+							})
+						});
+					};
+
+					// ================================
+					// 🚀 START GAME
+					// ================================
 					
 					main();
 					
