@@ -2,11 +2,15 @@ export default async function handler(req, res) {
 
 	try {
 
-		const body = JSON.parse(req.body);
+		let raw = "";
+
+		for await (const chunk of req) {
+			raw += chunk;
+		}
+
+		const body = JSON.parse(raw);
 
 		const sessionId = body.sessionId;
-
-		console.log("SESSION:", sessionId);
 
 		const response = await fetch(
 			process.env.SUPABASE_URL + "/rest/v1/sessions",
@@ -15,8 +19,7 @@ export default async function handler(req, res) {
 				headers: {
 					apikey: process.env.SUPABASE_ANON_KEY,
 					Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-					"Content-Type": "application/json",
-					Prefer: "return=representation"
+					"Content-Type": "application/json"
 				},
 				body: JSON.stringify({
 					id: sessionId
@@ -25,8 +28,6 @@ export default async function handler(req, res) {
 		);
 
 		const text = await response.text();
-
-		console.log("SUPABASE:", text);
 
 		res.status(200).send(text);
 
