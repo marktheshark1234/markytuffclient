@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Session Viewer</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: monospace;
+      padding: 20px;
+    }
+    .session {
+      border: 1px solid #444;
+      margin-bottom: 20px;
+      padding: 10px;
+    }
+    .inputs {
+      margin-left: 20px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Sessions + Inputs</h1>
+
+<div id="container">Loading...</div>
+
+<script>
+const SUPABASE_URL = "https://jdzimxwvsxopagtrmbss.supabase.co";
+const SUPABASE_KEY = "sb_publishable_cGxBmqFfW2Aq_ilYBFM8cQ_DJo1e65f"; // your key
+
+async function loadData() {
+  const container = document.getElementById("container");
+
+  // get sessions
+  const sessionsRes = await fetch(
+    SUPABASE_URL + "/rest/v1/sessions?select=*&order=started_at.desc",
+    {
+      headers: {
+        apikey: SUPABASE_KEY
+      }
+    }
+  );
+  const sessions = await sessionsRes.json();
+
+  // get inputs
+  const inputsRes = await fetch(
+    SUPABASE_URL + "/rest/v1/inputs?select=*",
+    {
+      headers: {
+        apikey: SUPABASE_KEY
+      }
+    }
+  );
+  const inputs = await inputsRes.json();
+
+  container.innerHTML = "";
+
+  sessions.forEach(session => {
+    const div = document.createElement("div");
+    div.className = "session";
+
+    const title = document.createElement("h3");
+    title.textContent = "Session: " + session.id + " | Score: " + session.score;
+    div.appendChild(title);
+
+    const list = document.createElement("div");
+    list.className = "inputs";
+
+    const sessionInputs = inputs
+      .filter(i => i.session_id === session.id)
+      .sort((a, b) => a.time_ms - b.time_ms);
+
+    sessionInputs.forEach(i => {
+      const p = document.createElement("p");
+      p.textContent = `${i.time_ms}ms → ${i.key}`;
+      list.appendChild(p);
+    });
+
+    div.appendChild(list);
+    container.appendChild(div);
+  });
+}
+
+loadData();
+</script>
+
+</body>
+</html>
