@@ -2,13 +2,19 @@ export default async function handler(req, res) {
 
 	try {
 
-		let raw = "";
-
-		for await (const chunk of req) {
-			raw += chunk;
+		if(req.method !== "POST") {
+			return res.status(200).send("end api ready");
 		}
 
-		const body = JSON.parse(raw);
+		let body = req.body;
+
+		if(typeof body === "string") {
+			body = JSON.parse(body);
+		}
+
+		if(!body || !body.sessionId) {
+			return res.status(400).send("missing body");
+		}
 
 		const sessionId = body.sessionId;
 		const score = body.score;
