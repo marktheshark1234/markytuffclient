@@ -1,8 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const { sessionId } = JSON.parse(req.body);
-
-    console.log("SESSION:", sessionId);
+    const { sessionId } = req.body;
 
     const response = await fetch(
       process.env.SUPABASE_URL + "/rest/v1/sessions",
@@ -21,8 +19,6 @@ export default async function handler(req, res) {
     );
 
     const text = await response.text();
-
-    console.log("SUPABASE RESPONSE:", text);
 
     res.status(200).send(text);
 
