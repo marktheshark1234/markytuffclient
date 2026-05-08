@@ -1,24 +1,12 @@
 export default async function handler(req, res) {
 
+	if(req.method !== "POST") {
+		return res.status(200).send("input api working");
+	}
+
 	try {
 
-		if(req.method !== "POST") {
-			return res.status(200).send("input api ready");
-		}
-
-		let body = req.body;
-
-		if(typeof body === "string") {
-			body = JSON.parse(body);
-		}
-
-		if(!body || !body.sessionId) {
-			return res.status(400).send("missing body");
-		}
-
-		const sessionId = body.sessionId;
-		const key = body.key;
-		const time = body.time;
+		const { sessionId, key, time } = req.body;
 
 		const response = await fetch(
 			process.env.SUPABASE_URL + "/rest/v1/inputs",
