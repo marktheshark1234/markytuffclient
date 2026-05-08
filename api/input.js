@@ -1,41 +1,45 @@
 export default async function handler(req, res) {
 
-  try {
+	try {
 
-    const { sessionId, key, time } = req.body;
+		const body = JSON.parse(req.body);
 
-    console.log("INPUT:", sessionId, key, time);
+		const sessionId = body.sessionId;
+		const key = body.key;
+		const time = body.time;
 
-    const response = await fetch(
-      process.env.SUPABASE_URL + "/rest/v1/inputs",
-      {
-        method: "POST",
-        headers: {
-          apikey: process.env.SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=representation"
-        },
-        body: JSON.stringify({
-          session_id: sessionId,
-          key: key,
-          time_ms: time
-        })
-      }
-    );
+		console.log("INPUT:", sessionId, key, time);
 
-    const text = await response.text();
+		const response = await fetch(
+			process.env.SUPABASE_URL + "/rest/v1/inputs",
+			{
+				method: "POST",
+				headers: {
+					apikey: process.env.SUPABASE_ANON_KEY,
+					Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+					"Content-Type": "application/json",
+					Prefer: "return=representation"
+				},
+				body: JSON.stringify({
+					session_id: sessionId,
+					key: key,
+					time_ms: time
+				})
+			}
+		);
 
-    console.log("SUPABASE:", text);
+		const text = await response.text();
 
-    res.status(200).send(text);
+		console.log("SUPABASE:", text);
 
-  } catch (err) {
+		res.status(200).send(text);
 
-    console.error(err);
+	} catch(err) {
 
-    res.status(500).send(err.toString());
+		console.error(err);
 
-  }
+		res.status(500).send(err.toString());
+
+	}
 
 }
