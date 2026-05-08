@@ -1,6 +1,10 @@
 export default async function handler(req, res) {
+
   try {
+
     const { sessionId, key, time } = req.body;
+
+    console.log("INPUT:", sessionId, key, time);
 
     const response = await fetch(
       process.env.SUPABASE_URL + "/rest/v1/inputs",
@@ -22,10 +26,16 @@ export default async function handler(req, res) {
 
     const text = await response.text();
 
+    console.log("SUPABASE:", text);
+
     res.status(200).send(text);
 
   } catch (err) {
+
     console.error(err);
+
     res.status(500).send(err.toString());
+
   }
+
 }
