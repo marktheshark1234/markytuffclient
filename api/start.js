@@ -2,13 +2,22 @@ export default async function handler(req, res) {
 
 	try {
 
-		let raw = "";
-
-		for await (const chunk of req) {
-			raw += chunk;
+		// only allow POST
+		if(req.method !== "POST") {
+			return res.status(200).send("start api ready");
 		}
 
-		const body = JSON.parse(raw);
+		let body = req.body;
+
+		// handle raw string body
+		if(typeof body === "string") {
+			body = JSON.parse(body);
+		}
+
+		// fallback if undefined
+		if(!body || !body.sessionId) {
+			return res.status(400).send("missing sessionId");
+		}
 
 		const sessionId = body.sessionId;
 
