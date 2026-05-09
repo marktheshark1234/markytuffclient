@@ -6,7 +6,17 @@ export default async function handler(req, res) {
 
 	try {
 
-		const { sessionId, key, time } = req.body;
+		const { sessionId, inputs } = req.body;
+
+		if(!sessionId || !inputs || !Array.isArray(inputs)) {
+			return res.status(400).send("bad request");
+		}
+
+		const rows = inputs.map(i => ({
+			session_id: sessionId,
+			key: i.key,
+			time_ms: i.time
+		}));
 
 		const response = await fetch(
 			process.env.SUPABASE_URL + "/rest/v1/inputs",
@@ -17,15 +27,13 @@ export default async function handler(req, res) {
 					Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({
-					session_id: sessionId,
-					key: key,
-					time_ms: time
-				})
+				body: JSON.stringify(rows)
 			}
 		);
 
 		const text = await response.text();
+
+		console.log("SUPABASE:", text);
 
 		res.status(200).send(text);
 
