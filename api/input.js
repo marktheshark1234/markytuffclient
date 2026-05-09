@@ -6,17 +6,36 @@ export default async function handler(req, res) {
 
 	try {
 
-		const { sessionId, inputs } = req.body;
+		let body = req.body;
 
-		if(!sessionId || !inputs || !Array.isArray(inputs)) {
+		// handle string body
+		if(typeof body === "string") {
+			body = JSON.parse(body);
+		}
+
+		console.log("BODY:", body);
+
+		const sessionId = String(body.sessionId);
+
+		const inputs = body.inputs;
+
+		if(!sessionId || !Array.isArray(inputs)) {
 			return res.status(400).send("bad request");
 		}
 
-		const rows = inputs.map(i => ({
-			session_id: sessionId,
-			key: i.key,
-			time_ms: i.time
-		}));
+		const rows = [];
+
+		for(const input of inputs) {
+
+			rows.push({
+				session_id: sessionId,
+				key: String(input.key),
+				time_ms: Number(input.time)
+			});
+
+		}
+
+		console.log("ROWS:", rows);
 
 		const response = await fetch(
 			process.env.SUPABASE_URL + "/rest/v1/inputs",
@@ -25,7 +44,8 @@ export default async function handler(req, res) {
 				headers: {
 					apikey: process.env.SUPABASE_ANON_KEY,
 					Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-					"Content-Type": "application/json"
+					"Content-Type": "application/json",
+					Prefer: "return=representation"
 				},
 				body: JSON.stringify(rows)
 			}
