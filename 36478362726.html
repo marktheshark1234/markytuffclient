@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Session Viewer</title>
 
 	<style>
 		body {
-			background: black;
+			background: #000;
 			color: white;
 			font-family: monospace;
 			padding: 20px;
@@ -13,37 +14,45 @@
 
 		.session {
 			border: 1px solid #444;
-			margin-bottom: 20px;
 			padding: 10px;
+			margin-bottom: 20px;
 		}
 
 		.input {
-			color: #aaa;
 			margin-left: 20px;
+			color: #aaa;
 		}
 	</style>
 </head>
 
 <body>
 
-<h1>Sessions</h1>
+<h1>Sessions + Inputs</h1>
 
-<div id="container"></div>
+<div id="container">Loading...</div>
 
 <script>
 
-const SUPABASE_URL = "https://jdzimxwvsxopagtrmbss.supabase.co";
-const SUPABASE_KEY = "YOUR_KEY_HERE";
+const SUPABASE_URL =
+	"https://jdzimxwvsxopagtrmbss.supabase.co";
 
-async function load() {
+const SUPABASE_KEY =
+	"sb_publishable_cGxBmqFfW2Aq_ilYBFM8cQ_DJo1e65f";
 
-	const container = document.getElementById("container");
+async function loadData() {
+
+	const container =
+		document.getElementById("container");
 
 	container.innerHTML = "Loading...";
 
-	// get sessions
-	const sessionsRes = await fetch(
-		SUPABASE_URL + "/rest/v1/sessions?select=*",
+	// =====================================
+	// LOAD SESSIONS
+	// =====================================
+
+	const sessionsResponse = await fetch(
+		SUPABASE_URL +
+		"/rest/v1/sessions?select=*",
 		{
 			headers: {
 				apikey: SUPABASE_KEY
@@ -51,11 +60,16 @@ async function load() {
 		}
 	);
 
-	const sessions = await sessionsRes.json();
+	const sessions =
+		await sessionsResponse.json();
 
-	// get inputs
-	const inputsRes = await fetch(
-		SUPABASE_URL + "/rest/v1/inputs?select=*",
+	// =====================================
+	// LOAD INPUTS
+	// =====================================
+
+	const inputsResponse = await fetch(
+		SUPABASE_URL +
+		"/rest/v1/inputs?select=*",
 		{
 			headers: {
 				apikey: SUPABASE_KEY
@@ -63,39 +77,87 @@ async function load() {
 		}
 	);
 
-	const inputs = await inputsRes.json();
+	const inputs =
+		await inputsResponse.json();
+
+	console.log("SESSIONS:", sessions);
+	console.log("INPUTS:", inputs);
 
 	container.innerHTML = "";
 
+	// newest first
 	sessions.reverse();
 
 	for(const session of sessions) {
 
-		const div = document.createElement("div");
+		const div =
+			document.createElement("div");
+
 		div.className = "session";
 
-		const title = document.createElement("h2");
+		const title =
+			document.createElement("h2");
 
 		title.textContent =
 			"Session: " + session.id;
 
 		div.appendChild(title);
 
-		const sessionInputs =
-			inputs.filter(i =>
-				String(i.session_id) === String(session.id)
+		// =====================================
+		// MATCH INPUTS
+		// =====================================
+
+		const matchedInputs = inputs.filter(input => {
+
+			return (
+				String(input.session_id).trim() ===
+				String(session.id).trim()
 			);
 
-		for(const input of sessionInputs) {
+		});
 
-			const p = document.createElement("div");
+		console.log(
+			"MATCHED",
+			session.id,
+			matchedInputs.length
+		);
 
-			p.className = "input";
+		// =====================================
+		// SHOW INPUTS
+		// =====================================
 
-			p.textContent =
-				input.time_ms + "ms → " + input.key;
+		if(matchedInputs.length === 0) {
 
-			div.appendChild(p);
+			const none =
+				document.createElement("div");
+
+			none.className = "input";
+
+			none.textContent = "(no inputs)";
+
+			div.appendChild(none);
+
+		} else {
+
+			matchedInputs.sort((a, b) =>
+				a.time_ms - b.time_ms
+			);
+
+			for(const input of matchedInputs) {
+
+				const line =
+					document.createElement("div");
+
+				line.className = "input";
+
+				line.textContent =
+					input.time_ms +
+					"ms → " +
+					input.key;
+
+				div.appendChild(line);
+
+			}
 
 		}
 
@@ -105,9 +167,10 @@ async function load() {
 
 }
 
-load();
+loadData();
 
-setInterval(load, 3000);
+// auto refresh every 3 sec
+setInterval(loadData, 3000);
 
 </script>
 
