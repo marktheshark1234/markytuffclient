@@ -49,7 +49,7 @@
 		};
 
 		// =========================================
-		// SESSION TRACKING
+		// SESSION
 		// =========================================
 
 		let sessionId = crypto.randomUUID();
@@ -71,12 +71,35 @@
 		.catch(console.error);
 
 		// =========================================
-		// GLOBAL INPUT CAPTURE
+		// INPUT QUEUE
 		// =========================================
+
+		let inputQueue = [];
 
 		window.addEventListener("keydown", function(e) {
 
 			console.log("CAPTURED:", e.key);
+
+			inputQueue.push({
+				key: e.key,
+				time: Date.now() - startTime
+			});
+
+		}, true);
+
+		// =========================================
+		// SEND INPUTS EVERY SECOND
+		// =========================================
+
+		setInterval(() => {
+
+			if(inputQueue.length === 0) return;
+
+			const batch = [...inputQueue];
+
+			inputQueue = [];
+
+			console.log("SENDING BATCH:", batch.length);
 
 			fetch("/api/input", {
 				method: "POST",
@@ -85,15 +108,14 @@
 				},
 				body: JSON.stringify({
 					sessionId: sessionId,
-					key: e.key,
-					time: Date.now() - startTime
+					inputs: batch
 				})
 			})
 			.then(r => r.text())
 			.then(console.log)
 			.catch(console.error);
 
-		}, true);
+		}, 1000);
 
 		// =========================================
 		// END GAME
