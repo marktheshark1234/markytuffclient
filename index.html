@@ -72,24 +72,17 @@ window.addEventListener("load", function() {
 	};
 
 	// =====================================
-	// SINGLE PERSISTENT SESSION
+	// SESSION
 	// =====================================
 
-	if(!window.GLOBAL_SESSION_ID) {
-
-		window.GLOBAL_SESSION_ID =
-			crypto.randomUUID();
-
-	}
-
 	const sessionId =
-		window.GLOBAL_SESSION_ID;
+		crypto.randomUUID();
 
 	const startTime =
 		Date.now();
 
 	console.log(
-		"SESSION:",
+		"SESSION CREATED:",
 		sessionId
 	);
 
@@ -115,101 +108,90 @@ window.addEventListener("load", function() {
 	.catch(console.error);
 
 	// =====================================
-	// INPUT QUEUE
+	// LOCAL INPUT QUEUE
 	// =====================================
 
-	if(!window.INPUT_QUEUE) {
-		window.INPUT_QUEUE = [];
-	}
-
-	const inputQueue =
-		window.INPUT_QUEUE;
+	const inputQueue = [];
 
 	// =====================================
-	// ADD LISTENER ONCE
+	// KEY LISTENER
 	// =====================================
 
-	if(!window.INPUT_LISTENER_ADDED) {
-
-		window.INPUT_LISTENER_ADDED = true;
-
-		window.addEventListener(
-			"keydown",
-			function(e) {
-
-				console.log(
-					"KEY:",
-					e.key,
-					"SESSION:",
-					sessionId
-				);
-
-				inputQueue.push({
-					key: e.key,
-					time:
-						Date.now() -
-						startTime
-				});
-
-			},
-			true
-		);
-
-	}
-
-	// =====================================
-	// SEND INPUTS EVERY SECOND
-	// =====================================
-
-	if(!window.INPUT_SENDER_STARTED) {
-
-		window.INPUT_SENDER_STARTED = true;
-
-		setInterval(function() {
-
-			if(inputQueue.length === 0) {
-				return;
-			}
-
-			const batch =
-				[...inputQueue];
-
-			inputQueue.length = 0;
+	window.addEventListener(
+		"keydown",
+		function(e) {
 
 			console.log(
-				"SENDING:",
-				batch.length,
+				"KEY:",
+				e.key,
 				"SESSION:",
 				sessionId
 			);
 
-			fetch("/api/input", {
+			inputQueue.push({
 
-				method: "POST",
+				key: e.key,
 
-				headers: {
-					"Content-Type":
-						"application/json"
-				},
+				time:
+					Date.now() -
+					startTime
 
-				body: JSON.stringify({
+			});
 
-					sessionId:
-						sessionId,
+		},
+		true
+	);
 
-					inputs:
-						batch
+	// =====================================
+	// SEND INPUTS
+	// =====================================
 
-				})
+	setInterval(function() {
+
+		if(inputQueue.length === 0) {
+			return;
+		}
+
+		const batch =
+			[...inputQueue];
+
+		inputQueue.length = 0;
+
+		console.log(
+			"SENDING SESSION:",
+			sessionId
+		);
+
+		console.log(
+			"BATCH SIZE:",
+			batch.length
+		);
+
+		fetch("/api/input", {
+
+			method: "POST",
+
+			headers: {
+				"Content-Type":
+					"application/json"
+			},
+
+			body: JSON.stringify({
+
+				sessionId:
+					sessionId,
+
+				inputs:
+					batch
 
 			})
-			.then(r => r.text())
-			.then(console.log)
-			.catch(console.error);
 
-		}, 1000);
+		})
+		.then(r => r.text())
+		.then(console.log)
+		.catch(console.error);
 
-	}
+	}, 1000);
 
 	// =====================================
 	// START GAME
