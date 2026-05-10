@@ -25,6 +25,11 @@
 			color: #aaa;
 		}
 
+		button {
+			padding: 10px;
+			font-size: 16px;
+		}
+
 	</style>
 
 </head>
@@ -124,8 +129,17 @@ async function loadData() {
 
 		const matchedInputs =
 			inputs.filter(i =>
-				String(i.session_id) ===
-				String(session.id)
+
+				String(
+					i.session_id
+				).trim()
+
+				===
+
+				String(
+					session.id
+				).trim()
+
 			);
 
 		console.log(
@@ -148,9 +162,13 @@ async function loadData() {
 			);
 
 		title.textContent =
+
 			"Session: " +
+
 			session.id +
+
 			" | Inputs: " +
+
 			matchedInputs.length;
 
 		div.appendChild(title);
@@ -172,8 +190,11 @@ async function loadData() {
 				"input";
 
 			line.textContent =
+
 				input.time_ms +
+
 				"ms → " +
+
 				input.key;
 
 			div.appendChild(line);
