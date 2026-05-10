@@ -3,21 +3,32 @@
 
 <head>
 
-	<title>Viewer</title>
+	<title>Session Viewer</title>
 
 	<style>
 
 		body {
-			background:black;
-			color:white;
-			font-family:monospace;
-			padding:20px;
+			background: black;
+			color: white;
+			font-family: monospace;
+			padding: 20px;
 		}
 
 		.session {
-			border:1px solid #444;
-			padding:10px;
-			margin-bottom:20px;
+			border: 1px solid #444;
+			padding: 10px;
+			margin-bottom: 20px;
+		}
+
+		.input {
+			margin-left: 20px;
+			color: #aaa;
+		}
+
+		button {
+			padding: 10px;
+			font-size: 16px;
+			margin-bottom: 20px;
 		}
 
 	</style>
@@ -32,7 +43,9 @@
 	Refresh
 </button>
 
-<div id="container"></div>
+<div id="container">
+	Loading...
+</div>
 
 <script>
 
@@ -52,14 +65,15 @@ async function loadData() {
 	container.innerHTML =
 		"Loading...";
 
-	// =====================
+	// =====================================
 	// LOAD SESSIONS
-	// =====================
+	// =====================================
 
 	const sessionsRes =
 		await fetch(
 
 			SUPABASE_URL +
+
 			"/rest/v1/sessions?select=*",
 
 			{
@@ -74,33 +88,61 @@ async function loadData() {
 	const sessions =
 		await sessionsRes.json();
 
-	// =====================
-	// LOAD INPUTS
-	// =====================
-
-	const inputsRes =
-		await fetch(
-
-			SUPABASE_URL +
-			"/rest/v1/inputs?select=*",
-
-			{
-				headers: {
-					apikey:
-						SUPABASE_KEY
-				}
-			}
-
-		);
-
-	const inputs =
-		await inputsRes.json();
+	console.log(
+		"SESSIONS:",
+		sessions
+	);
 
 	container.innerHTML = "";
 
+	// newest first
 	sessions.reverse();
 
+	// =====================================
+	// LOAD EACH SESSION
+	// =====================================
+
 	for(const session of sessions) {
+
+		// -----------------------------
+		// LOAD INPUTS FOR SESSION
+		// -----------------------------
+
+		const inputsRes =
+			await fetch(
+
+				SUPABASE_URL +
+
+				"/rest/v1/inputs" +
+
+				"?session_id=eq." +
+
+				session.id +
+
+				"&select=*",
+
+				{
+					headers: {
+						apikey:
+							SUPABASE_KEY
+					}
+				}
+
+			);
+
+		const inputs =
+			await inputsRes.json();
+
+		console.log(
+			"SESSION:",
+			session.id,
+			"INPUTS:",
+			inputs.length
+		);
+
+		// -----------------------------
+		// SESSION BOX
+		// -----------------------------
 
 		const div =
 			document.createElement(
@@ -116,23 +158,40 @@ async function loadData() {
 			);
 
 		title.textContent =
+
 			"Session: " +
-			session.id;
+
+			session.id +
+
+			" | Inputs: " +
+
+			inputs.length;
 
 		div.appendChild(title);
 
-		const matched =
-			inputs.filter(i =>
-				i.session_id ===
-				session.id
-			);
+		// -----------------------------
+		// SORT INPUTS
+		// -----------------------------
 
-		for(const input of matched) {
+		inputs.sort(
+			(a, b) =>
+				a.time_ms -
+				b.time_ms
+		);
+
+		// -----------------------------
+		// SHOW INPUTS
+		// -----------------------------
+
+		for(const input of inputs) {
 
 			const line =
 				document.createElement(
 					"div"
 				);
+
+			line.className =
+				"input";
 
 			line.textContent =
 
