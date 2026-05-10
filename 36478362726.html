@@ -1,35 +1,10 @@
 <!DOCTYPE html>
 <html>
+<body style="background:black;color:white;font-family:monospace;">
 
-<head>
-	<title>Session Viewer</title>
+<h1>RAW DEBUG</h1>
 
-	<style>
-		body {
-			background: black;
-			color: white;
-			font-family: monospace;
-			padding: 20px;
-		}
-
-		.session {
-			border: 1px solid #444;
-			padding: 10px;
-			margin-bottom: 20px;
-		}
-
-		.input {
-			margin-left: 20px;
-			color: #aaa;
-		}
-	</style>
-</head>
-
-<body>
-
-<h1>Sessions</h1>
-
-<div id="container"></div>
+<pre id="out"></pre>
 
 <script>
 
@@ -39,20 +14,13 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 	"sb_publishable_cGxBmqFfW2Aq_ilYBFM8cQ_DJo1e65f";
 
-async function loadData() {
+async function run() {
 
-	const container =
-		document.getElementById("container");
+	const out = document.getElementById("out");
 
-	container.innerHTML = "Loading...";
-
-	// =========================
 	// LOAD SESSIONS
-	// =========================
-
-	const sessionsRes = await fetch(
-		SUPABASE_URL +
-		"/rest/v1/sessions?select=*&order=started_at.desc&limit=25",
+	const sRes = await fetch(
+		SUPABASE_URL + "/rest/v1/sessions?select=*",
 		{
 			headers: {
 				apikey: SUPABASE_KEY
@@ -60,16 +28,11 @@ async function loadData() {
 		}
 	);
 
-	const sessions =
-		await sessionsRes.json();
+	const sessions = await sRes.json();
 
-	// =========================
 	// LOAD INPUTS
-	// =========================
-
-	const inputsRes = await fetch(
-		SUPABASE_URL +
-		"/rest/v1/inputs?select=*",
+	const iRes = await fetch(
+		SUPABASE_URL + "/rest/v1/inputs?select=*",
 		{
 			headers: {
 				apikey: SUPABASE_KEY
@@ -77,69 +40,17 @@ async function loadData() {
 		}
 	);
 
-	const inputs =
-		await inputsRes.json();
+	const inputs = await iRes.json();
 
-	console.log("SESSIONS:", sessions);
-	console.log("INPUTS:", inputs);
-
-	container.innerHTML = "";
-
-	for(const session of sessions) {
-
-		const matchedInputs =
-			inputs.filter(i =>
-				String(i.session_id) === String(session.id)
-			);
-
-		// skip sessions with no inputs
-		if(matchedInputs.length === 0) {
-			continue;
-		}
-
-		const div =
-			document.createElement("div");
-
-		div.className = "session";
-
-		const title =
-			document.createElement("h2");
-
-		title.textContent =
-			"Session: " +
-			session.id +
-			" | Inputs: " +
-			matchedInputs.length;
-
-		div.appendChild(title);
-
-		matchedInputs.sort((a, b) =>
-			a.time_ms - b.time_ms
-		);
-
-		for(const input of matchedInputs) {
-
-			const line =
-				document.createElement("div");
-
-			line.className = "input";
-
-			line.textContent =
-				input.time_ms +
-				"ms → " +
-				input.key;
-
-			div.appendChild(line);
-
-		}
-
-		container.appendChild(div);
-
-	}
+	out.textContent =
+		"SESSIONS:\n\n" +
+		JSON.stringify(sessions.slice(0, 5), null, 2) +
+		"\n\nINPUTS:\n\n" +
+		JSON.stringify(inputs.slice(0, 20), null, 2);
 
 }
 
-loadData();
+run();
 
 </script>
 
