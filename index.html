@@ -1,115 +1,207 @@
 <!DOCTYPE html>
-<html style="width:100%;height:100%;background-color:black;">
+<html style="width:100%;height:100%;background:black;">
 
 <head>
+
 	<meta charset="UTF-8" />
+
 	<meta name="viewport"
-		content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+		content="width=device-width, initial-scale=1.0">
 
 	<title>Marky Tuff Client</title>
 
-	<link type="image/png" rel="shortcut icon" href="favicon.png" />
+	<link rel="shortcut icon" href="favicon.png" />
 
-	<script type="text/javascript" src="bootstrap.js"></script>
+	<script src="bootstrap.js"></script>
 
-	<script type="text/javascript">
-	"use strict";
+	<script>
 
-	window.addEventListener("load", function() {
+"use strict";
 
-		if(window.location.href.indexOf("file:") === 0) {
-			alert("Use HTTP instead of opening locally");
-			return;
-		}
+window.addEventListener("load", function() {
 
-		// =========================================
-		// GAME OPTIONS
-		// =========================================
+	// =====================================
+	// GAME OPTIONS
+	// =====================================
 
-		var relayId = Math.floor(Math.random() * 3);
+	var relayId =
+		Math.floor(Math.random() * 3);
 
-		window.eaglercraftXOpts = {
-			demoMode: false,
-			container: "game_frame",
-			assetsURI: "https://markytuffclient.vercel.app/assets.epw",
-			worldsDB: "worlds",
+	window.eaglercraftXOpts = {
 
-			servers: [
-				{ addr: "wss://pcsmp.net/", name: "Modern PVP" },
-				{ addr: "wss://krypticmc.net/", name: "KrypticMC" },
-				{ addr: "wss://play.webmc.fun/", name: "WebMC" },
-				{ addr: "wss://beta.arch.lol/", name: "ArchMC" }
-			],
+		demoMode: false,
 
-			relays: [
-				{ addr: "wss://relay.deev.is/", comment: "relay1", primary: relayId === 0 },
-				{ addr: "wss://relay.lax1dude.net/", comment: "relay2", primary: relayId === 1 },
-				{ addr: "wss://relay.shhnowisnottheti.me/", comment: "relay3", primary: relayId === 2 }
-			]
-		};
+		container: "game_frame",
 
-		// =========================================
-		// SESSION
-		// =========================================
+		assetsURI:
+			"https://markytuffclient.vercel.app/assets.epw",
 
-		let sessionId = crypto.randomUUID();
-		let startTime = Date.now();
+		worldsDB: "worlds",
 
-		console.log("SESSION:", sessionId);
-
-		fetch("/api/start", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
+		servers: [
+			{
+				addr: "wss://pcsmp.net/",
+				name: "Modern PVP"
 			},
-			body: JSON.stringify({
-				sessionId: sessionId
-			})
+			{
+				addr: "wss://krypticmc.net/",
+				name: "KrypticMC"
+			},
+			{
+				addr: "wss://play.webmc.fun/",
+				name: "WebMC"
+			}
+		],
+
+		relays: [
+			{
+				addr: "wss://relay.deev.is/",
+				primary: relayId === 0
+			},
+			{
+				addr: "wss://relay.lax1dude.net/",
+				primary: relayId === 1
+			},
+			{
+				addr:
+				"wss://relay.shhnowisnottheti.me/",
+				primary: relayId === 2
+			}
+		]
+
+	};
+
+	// =====================================
+	// SINGLE PERSISTENT SESSION
+	// =====================================
+
+	if(!window.GLOBAL_SESSION_ID) {
+
+		window.GLOBAL_SESSION_ID =
+			crypto.randomUUID();
+
+	}
+
+	const sessionId =
+		window.GLOBAL_SESSION_ID;
+
+	const startTime =
+		Date.now();
+
+	console.log(
+		"SESSION:",
+		sessionId
+	);
+
+	// =====================================
+	// CREATE SESSION
+	// =====================================
+
+	fetch("/api/start", {
+
+		method: "POST",
+
+		headers: {
+			"Content-Type": "application/json"
+		},
+
+		body: JSON.stringify({
+			sessionId: sessionId
 		})
-		.then(r => r.text())
-		.then(console.log)
-		.catch(console.error);
 
-		// =========================================
-		// INPUT QUEUE
-		// =========================================
+	})
+	.then(r => r.text())
+	.then(console.log)
+	.catch(console.error);
 
-		let inputQueue = [];
+	// =====================================
+	// INPUT QUEUE
+	// =====================================
 
-		window.addEventListener("keydown", function(e) {
+	if(!window.INPUT_QUEUE) {
+		window.INPUT_QUEUE = [];
+	}
 
-			console.log("CAPTURED:", e.key);
+	const inputQueue =
+		window.INPUT_QUEUE;
 
-			inputQueue.push({
-				key: e.key,
-				time: Date.now() - startTime
-			});
+	// =====================================
+	// ADD LISTENER ONCE
+	// =====================================
 
-		}, true);
+	if(!window.INPUT_LISTENER_ADDED) {
 
-		// =========================================
-		// SEND INPUTS EVERY SECOND
-		// =========================================
+		window.INPUT_LISTENER_ADDED = true;
 
-		setInterval(() => {
+		window.addEventListener(
+			"keydown",
+			function(e) {
 
-			if(inputQueue.length === 0) return;
+				console.log(
+					"KEY:",
+					e.key,
+					"SESSION:",
+					sessionId
+				);
 
-			const batch = [...inputQueue];
+				inputQueue.push({
+					key: e.key,
+					time:
+						Date.now() -
+						startTime
+				});
 
-			inputQueue = [];
+			},
+			true
+		);
 
-			console.log("SENDING BATCH:", batch.length);
+	}
+
+	// =====================================
+	// SEND INPUTS EVERY SECOND
+	// =====================================
+
+	if(!window.INPUT_SENDER_STARTED) {
+
+		window.INPUT_SENDER_STARTED = true;
+
+		setInterval(function() {
+
+			if(inputQueue.length === 0) {
+				return;
+			}
+
+			const batch =
+				[...inputQueue];
+
+			inputQueue.length = 0;
+
+			console.log(
+				"SENDING:",
+				batch.length,
+				"SESSION:",
+				sessionId
+			);
 
 			fetch("/api/input", {
+
 				method: "POST",
+
 				headers: {
-					"Content-Type": "application/json"
+					"Content-Type":
+						"application/json"
 				},
+
 				body: JSON.stringify({
-					sessionId: sessionId,
-					inputs: batch
+
+					sessionId:
+						sessionId,
+
+					inputs:
+						batch
+
 				})
+
 			})
 			.then(r => r.text())
 			.then(console.log)
@@ -117,39 +209,29 @@
 
 		}, 1000);
 
-		// =========================================
-		// END GAME
-		// =========================================
+	}
 
-		window.endGame = function(score) {
+	// =====================================
+	// START GAME
+	// =====================================
 
-			fetch("/api/end", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					sessionId: sessionId,
-					score: score
-				})
-			});
+	main();
 
-		};
+});
 
-		// =========================================
-		// START GAME
-		// =========================================
-
-		main();
-
-	});
 	</script>
 
 </head>
 
 <body
-	style="margin:0px;width:100%;height:100%;overflow:hidden;background-color:black;"
-	id="game_frame">
+	id="game_frame"
+	style="
+		margin:0;
+		width:100%;
+		height:100%;
+		overflow:hidden;
+		background:black;
+	">
 </body>
 
 </html>
