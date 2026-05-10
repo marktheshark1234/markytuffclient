@@ -3,31 +3,21 @@
 
 <head>
 
-	<title>Session Viewer</title>
+	<title>Viewer</title>
 
 	<style>
 
 		body {
-			background: black;
-			color: white;
-			font-family: monospace;
-			padding: 20px;
+			background:black;
+			color:white;
+			font-family:monospace;
+			padding:20px;
 		}
 
 		.session {
-			border: 1px solid #444;
-			padding: 10px;
-			margin-bottom: 20px;
-		}
-
-		.input {
-			margin-left: 20px;
-			color: #aaa;
-		}
-
-		button {
-			padding: 10px;
-			font-size: 16px;
+			border:1px solid #444;
+			padding:10px;
+			margin-bottom:20px;
 		}
 
 	</style>
@@ -42,11 +32,7 @@
 	Refresh
 </button>
 
-<br><br>
-
-<div id="container">
-	Loading...
-</div>
+<div id="container"></div>
 
 <script>
 
@@ -66,9 +52,9 @@ async function loadData() {
 	container.innerHTML =
 		"Loading...";
 
-	// =================================
+	// =====================
 	// LOAD SESSIONS
-	// =================================
+	// =====================
 
 	const sessionsRes =
 		await fetch(
@@ -88,9 +74,9 @@ async function loadData() {
 	const sessions =
 		await sessionsRes.json();
 
-	// =================================
+	// =====================
 	// LOAD INPUTS
-	// =================================
+	// =====================
 
 	const inputsRes =
 		await fetch(
@@ -110,43 +96,11 @@ async function loadData() {
 	const inputs =
 		await inputsRes.json();
 
-	console.log(
-		"SESSIONS:",
-		sessions
-	);
-
-	console.log(
-		"INPUTS:",
-		inputs
-	);
-
 	container.innerHTML = "";
 
-	// newest first
 	sessions.reverse();
 
 	for(const session of sessions) {
-
-		const matchedInputs =
-			inputs.filter(i =>
-
-				String(
-					i.session_id
-				).trim()
-
-				===
-
-				String(
-					session.id
-				).trim()
-
-			);
-
-		console.log(
-			"MATCH:",
-			session.id,
-			matchedInputs.length
-		);
 
 		const div =
 			document.createElement(
@@ -162,32 +116,23 @@ async function loadData() {
 			);
 
 		title.textContent =
-
 			"Session: " +
-
-			session.id +
-
-			" | Inputs: " +
-
-			matchedInputs.length;
+			session.id;
 
 		div.appendChild(title);
 
-		matchedInputs.sort(
-			(a, b) =>
-				a.time_ms -
-				b.time_ms
-		);
+		const matched =
+			inputs.filter(i =>
+				i.session_id ===
+				session.id
+			);
 
-		for(const input of matchedInputs) {
+		for(const input of matched) {
 
 			const line =
 				document.createElement(
 					"div"
 				);
-
-			line.className =
-				"input";
 
 			line.textContent =
 
