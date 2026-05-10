@@ -1,13 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html style="width:100%;height:100%;background:black;">
 
 <head>
 
 	<meta charset="UTF-8">
 
-	<title>Game</title>
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1.0">
 
-	<script src="bootstrap.js?v=2"></script>
+	<title>Marky Tuff Client</title>
+
+	<link
+		rel="shortcut icon"
+		href="favicon.png" />
+
+	<script src="bootstrap.js?v=3"></script>
 
 </head>
 
@@ -27,22 +35,114 @@
 
 window.addEventListener("load", async () => {
 
-	// =========================
-	// GAME OPTIONS
-	// =========================
+	// =====================================
+	// RELAY RANDOMIZER
+	// =====================================
+
+	var relayId =
+		Math.floor(Math.random() * 5);
+
+	// =====================================
+	// EAGLER OPTIONS
+	// =====================================
 
 	window.eaglercraftXOpts = {
+
+		demoMode: false,
 
 		container: "game_frame",
 
 		assetsURI:
-			"https://markytuffclient.vercel.app/assets.epw"
+			"https://markytuffclient.vercel.app/assets.epw",
+
+		worldsDB: "worlds",
+
+		servers: [
+
+			{
+				addr:
+					"wss://pcsmp.net/",
+				name:
+					"Modern PVP"
+			},
+
+			{
+				addr:
+					"wss://krypticmc.net/",
+				name:
+					"§4§lKrypticMC [FEATURED]"
+			},
+
+			{
+				addr:
+					"wss://play.webmc.fun/",
+				name:
+					"§c§lWebMC [PARTNER]"
+			},
+
+			{
+				addr:
+					"wss://beta.arch.lol/",
+				name:
+					"ArchMC"
+			}
+
+		],
+
+		relays: [
+
+			{
+				addr:
+					"wss://relay.deev.is/",
+				comment:
+					"lax1dude relay #1",
+				primary:
+					relayId === 0
+			},
+
+			{
+				addr:
+					"wss://relay.lax1dude.net/",
+				comment:
+					"lax1dude relay #2",
+				primary:
+					relayId === 1
+			},
+
+			{
+				addr:
+					"wss://relay.shhnowisnottheti.me/",
+				comment:
+					"ayunami relay #1",
+				primary:
+					relayId === 2
+			},
+
+			{
+				addr:
+					"wss://eaglerrelay.installgentoo.com/",
+				comment:
+					"hellscaped relay #1",
+				primary:
+					relayId === 3
+			},
+
+			{
+				addr:
+					"wss://eaglerrelay.powershelltech.com/",
+				comment:
+					"hellscaped relay #2",
+				primary:
+					relayId === 4
+			}
+
+		]
 
 	};
 
-	// =========================
+	// =====================================
 	// SESSION
-	// =========================
+	// =====================================
 
 	const sessionId =
 		crypto.randomUUID();
@@ -55,9 +155,9 @@ window.addEventListener("load", async () => {
 		sessionId
 	);
 
-	// =========================
+	// =====================================
 	// CREATE SESSION
-	// =========================
+	// =====================================
 
 	try {
 
@@ -97,9 +197,9 @@ window.addEventListener("load", async () => {
 
 	}
 
-	// =========================
-	// KEY LOGGER
-	// =========================
+	// =====================================
+	// INPUT LOGGER
+	// =====================================
 
 	window.addEventListener(
 		"keydown",
@@ -166,9 +266,9 @@ window.addEventListener("load", async () => {
 		true
 	);
 
-	// =========================
+	// =====================================
 	// START GAME
-	// =========================
+	// =====================================
 
 	main();
 
