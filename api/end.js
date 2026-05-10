@@ -1,38 +1,43 @@
 export default async function handler(req, res) {
 
 	if(req.method !== "POST") {
-		return res.status(200).send("end api working");
+		return res.status(200).send("end ok");
 	}
 
-	try {
+	const { sessionId, score } = req.body;
 
-		const { sessionId, score } = req.body;
+	const response = await fetch(
 
-		const response = await fetch(
-			`${process.env.SUPABASE_URL}/rest/v1/sessions?id=eq.${sessionId}`,
-			{
-				method: "PATCH",
-				headers: {
-					apikey: process.env.SUPABASE_ANON_KEY,
-					Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					score: score
-				})
-			}
-		);
+		process.env.SUPABASE_URL +
 
-		const text = await response.text();
+		"/rest/v1/sessions?id=eq." +
 
-		res.status(200).send(text);
+		sessionId,
 
-	} catch(err) {
+		{
+			method: "PATCH",
 
-		console.error(err);
+			headers: {
+				apikey:
+					process.env.SUPABASE_ANON_KEY,
 
-		res.status(500).send(err.toString());
+				Authorization:
+					`Bearer ${process.env.SUPABASE_ANON_KEY}`,
 
-	}
+				"Content-Type":
+					"application/json"
+			},
+
+			body: JSON.stringify({
+				score: score
+			})
+		}
+
+	);
+
+	const text =
+		await response.text();
+
+	res.status(200).send(text);
 
 }
