@@ -1,79 +1,48 @@
 <!DOCTYPE html>
-<html style="width:100%;height:100%;background:black;">
+<html>
 
 <head>
 
-	<meta charset="UTF-8" />
+	<meta charset="UTF-8">
 
-	<meta name="viewport"
-		content="width=device-width, initial-scale=1.0">
+	<title>Game</title>
 
-	<title>Marky Tuff Client</title>
+	<script src="bootstrap.js?v=1"></script>
 
-	<link rel="shortcut icon" href="favicon.png" />
+</head>
 
-	<script src="bootstrap.js"></script>
+<body
+	id="game_frame"
+	style="
+		margin:0;
+		width:100vw;
+		height:100vh;
+		background:black;
+		overflow:hidden;
+	">
 
-	<script>
+<script>
 
 "use strict";
 
-window.addEventListener("load", function() {
+window.addEventListener("load", async () => {
 
-	// =====================================
+	// =========================
 	// GAME OPTIONS
-	// =====================================
-
-	var relayId =
-		Math.floor(Math.random() * 3);
+	// =========================
 
 	window.eaglercraftXOpts = {
-
-		demoMode: false,
 
 		container: "game_frame",
 
 		assetsURI:
-			"https://markytuffclient.vercel.app/assets.epw",
-
-		worldsDB: "worlds",
-
-		servers: [
-			{
-				addr: "wss://pcsmp.net/",
-				name: "Modern PVP"
-			},
-			{
-				addr: "wss://krypticmc.net/",
-				name: "KrypticMC"
-			},
-			{
-				addr: "wss://play.webmc.fun/",
-				name: "WebMC"
-			}
-		],
-
-		relays: [
-			{
-				addr: "wss://relay.deev.is/",
-				primary: relayId === 0
-			},
-			{
-				addr: "wss://relay.lax1dude.net/",
-				primary: relayId === 1
-			},
-			{
-				addr:
-				"wss://relay.shhnowisnottheti.me/",
-				primary: relayId === 2
-			}
-		]
+			"https://markytuffclient.vercel.app/assets.epw"
 
 	};
 
-	// =====================================
-	// SESSION
-	// =====================================
+	// =========================
+	// CREATE SESSION
+	// =========================
 
 	const sessionId =
 		crypto.randomUUID();
@@ -82,59 +51,61 @@ window.addEventListener("load", function() {
 		Date.now();
 
 	console.log(
-		"SESSION CREATED:",
+		"SESSION:",
 		sessionId
 	);
 
-	// =====================================
-	// CREATE SESSION
-	// =====================================
-
-	fetch("/api/start", {
+	// create session in db
+	await fetch("/api/start", {
 
 		method: "POST",
 
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type":
+				"application/json"
 		},
 
 		body: JSON.stringify({
 			sessionId: sessionId
 		})
 
-	})
-	.then(r => r.text())
-	.then(console.log)
-	.catch(console.error);
+	});
 
-	// =====================================
-	// LOCAL INPUT QUEUE
-	// =====================================
-
-	const inputQueue = [];
-
-	// =====================================
-	// KEY LISTENER
-	// =====================================
+	// =========================
+	// KEY LOGGER
+	// =========================
 
 	window.addEventListener(
 		"keydown",
-		function(e) {
+		async (e) => {
 
 			console.log(
 				"KEY:",
-				e.key,
-				"SESSION:",
-				sessionId
+				e.key
 			);
 
-			inputQueue.push({
+			await fetch("/api/input", {
 
-				key: e.key,
+				method: "POST",
 
-				time:
-					Date.now() -
-					startTime
+				headers: {
+					"Content-Type":
+						"application/json"
+				},
+
+				body: JSON.stringify({
+
+					sessionId:
+						sessionId,
+
+					key:
+						e.key,
+
+					time:
+						Date.now() -
+						startTime
+
+				})
 
 			});
 
@@ -142,78 +113,15 @@ window.addEventListener("load", function() {
 		true
 	);
 
-	// =====================================
-	// SEND INPUTS
-	// =====================================
-
-	setInterval(function() {
-
-		if(inputQueue.length === 0) {
-			return;
-		}
-
-		const batch =
-			[...inputQueue];
-
-		inputQueue.length = 0;
-
-		console.log(
-			"SENDING SESSION:",
-			sessionId
-		);
-
-		console.log(
-			"BATCH SIZE:",
-			batch.length
-		);
-
-		fetch("/api/input", {
-
-			method: "POST",
-
-			headers: {
-				"Content-Type":
-					"application/json"
-			},
-
-			body: JSON.stringify({
-
-				sessionId:
-					sessionId,
-
-				inputs:
-					batch
-
-			})
-
-		})
-		.then(r => r.text())
-		.then(console.log)
-		.catch(console.error);
-
-	}, 1000);
-
-	// =====================================
+	// =========================
 	// START GAME
-	// =====================================
+	// =========================
 
 	main();
 
 });
 
-	</script>
+</script>
 
-</head>
-
-<body
-	id="game_frame"
-	style="
-		margin:0;
-		width:100%;
-		height:100%;
-		overflow:hidden;
-		background:black;
-	">
 </body>
-
 </html>
