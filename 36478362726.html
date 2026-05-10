@@ -1,10 +1,47 @@
 <!DOCTYPE html>
 <html>
-<body style="background:black;color:white;font-family:monospace;">
 
-<h1>RAW DEBUG</h1>
+<head>
 
-<pre id="out"></pre>
+	<title>Session Viewer</title>
+
+	<style>
+
+		body {
+			background: black;
+			color: white;
+			font-family: monospace;
+			padding: 20px;
+		}
+
+		.session {
+			border: 1px solid #444;
+			padding: 10px;
+			margin-bottom: 20px;
+		}
+
+		.input {
+			margin-left: 20px;
+			color: #aaa;
+		}
+
+	</style>
+
+</head>
+
+<body>
+
+<h1>Sessions</h1>
+
+<button onclick="loadData()">
+	Refresh
+</button>
+
+<br><br>
+
+<div id="container">
+	Loading...
+</div>
 
 <script>
 
@@ -14,43 +51,142 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 	"sb_publishable_cGxBmqFfW2Aq_ilYBFM8cQ_DJo1e65f";
 
-async function run() {
+async function loadData() {
 
-	const out = document.getElementById("out");
+	const container =
+		document.getElementById(
+			"container"
+		);
 
+	container.innerHTML =
+		"Loading...";
+
+	// =================================
 	// LOAD SESSIONS
-	const sRes = await fetch(
-		SUPABASE_URL + "/rest/v1/sessions?select=*",
-		{
-			headers: {
-				apikey: SUPABASE_KEY
+	// =================================
+
+	const sessionsRes =
+		await fetch(
+
+			SUPABASE_URL +
+			"/rest/v1/sessions?select=*",
+
+			{
+				headers: {
+					apikey:
+						SUPABASE_KEY
+				}
 			}
-		}
-	);
 
-	const sessions = await sRes.json();
+		);
 
+	const sessions =
+		await sessionsRes.json();
+
+	// =================================
 	// LOAD INPUTS
-	const iRes = await fetch(
-		SUPABASE_URL + "/rest/v1/inputs?select=*",
-		{
-			headers: {
-				apikey: SUPABASE_KEY
+	// =================================
+
+	const inputsRes =
+		await fetch(
+
+			SUPABASE_URL +
+			"/rest/v1/inputs?select=*",
+
+			{
+				headers: {
+					apikey:
+						SUPABASE_KEY
+				}
 			}
-		}
+
+		);
+
+	const inputs =
+		await inputsRes.json();
+
+	console.log(
+		"SESSIONS:",
+		sessions
 	);
 
-	const inputs = await iRes.json();
+	console.log(
+		"INPUTS:",
+		inputs
+	);
 
-	out.textContent =
-		"SESSIONS:\n\n" +
-		JSON.stringify(sessions.slice(0, 5), null, 2) +
-		"\n\nINPUTS:\n\n" +
-		JSON.stringify(inputs.slice(0, 20), null, 2);
+	container.innerHTML = "";
+
+	// newest first
+	sessions.reverse();
+
+	for(const session of sessions) {
+
+		const matchedInputs =
+			inputs.filter(i =>
+				String(i.session_id) ===
+				String(session.id)
+			);
+
+		console.log(
+			"MATCH:",
+			session.id,
+			matchedInputs.length
+		);
+
+		const div =
+			document.createElement(
+				"div"
+			);
+
+		div.className =
+			"session";
+
+		const title =
+			document.createElement(
+				"h2"
+			);
+
+		title.textContent =
+			"Session: " +
+			session.id +
+			" | Inputs: " +
+			matchedInputs.length;
+
+		div.appendChild(title);
+
+		matchedInputs.sort(
+			(a, b) =>
+				a.time_ms -
+				b.time_ms
+		);
+
+		for(const input of matchedInputs) {
+
+			const line =
+				document.createElement(
+					"div"
+				);
+
+			line.className =
+				"input";
+
+			line.textContent =
+				input.time_ms +
+				"ms → " +
+				input.key;
+
+			div.appendChild(line);
+
+		}
+
+		container.appendChild(div);
+
+	}
 
 }
 
-run();
+loadData();
 
 </script>
 
