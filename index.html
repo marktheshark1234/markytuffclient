@@ -7,7 +7,7 @@
 
 	<title>Game</title>
 
-	<script src="bootstrap.js?v=1"></script>
+	<script src="bootstrap.js?v=2"></script>
 
 </head>
 
@@ -41,7 +41,7 @@ window.addEventListener("load", async () => {
 	};
 
 	// =========================
-	// CREATE SESSION
+	// SESSION
 	// =========================
 
 	const sessionId =
@@ -55,21 +55,47 @@ window.addEventListener("load", async () => {
 		sessionId
 	);
 
-	// create session in db
-	await fetch("/api/start", {
+	// =========================
+	// CREATE SESSION
+	// =========================
 
-		method: "POST",
+	try {
 
-		headers: {
-			"Content-Type":
-				"application/json"
-		},
+		const startRes =
+			await fetch("/api/start", {
 
-		body: JSON.stringify({
-			sessionId: sessionId
-		})
+				method: "POST",
 
-	});
+				headers: {
+					"Content-Type":
+						"application/json"
+				},
+
+				body: JSON.stringify({
+					sessionId:
+						sessionId
+				})
+
+			});
+
+		console.log(
+			"START STATUS:",
+			startRes.status
+		);
+
+		console.log(
+			"START RESPONSE:",
+			await startRes.text()
+		);
+
+	} catch(err) {
+
+		console.error(
+			"START ERROR:",
+			err
+		);
+
+	}
 
 	// =========================
 	// KEY LOGGER
@@ -84,30 +110,57 @@ window.addEventListener("load", async () => {
 				e.key
 			);
 
-			await fetch("/api/input", {
+			try {
 
-				method: "POST",
+				const inputRes =
+					await fetch(
+						"/api/input",
+						{
 
-				headers: {
-					"Content-Type":
-						"application/json"
-				},
+							method:
+								"POST",
 
-				body: JSON.stringify({
+							headers: {
+								"Content-Type":
+									"application/json"
+							},
 
-					sessionId:
-						sessionId,
+							body:
+								JSON.stringify({
 
-					key:
-						e.key,
+									sessionId:
+										sessionId,
 
-					time:
-						Date.now() -
-						startTime
+									key:
+										e.key,
 
-				})
+									time:
+										Date.now() -
+										startTime
 
-			});
+								})
+
+						}
+					);
+
+				console.log(
+					"INPUT STATUS:",
+					inputRes.status
+				);
+
+				console.log(
+					"INPUT RESPONSE:",
+					await inputRes.text()
+				);
+
+			} catch(err) {
+
+				console.error(
+					"INPUT ERROR:",
+					err
+				);
+
+			}
 
 		},
 		true
