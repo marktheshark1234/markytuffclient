@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>gams.lol</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --period:480px;
+  --rainbow:repeating-linear-gradient(
+    90deg,
+    rgb(255,0,0) 0px,
+    rgb(255,128,0) 60px,
+    rgb(255,255,0) 120px,
+    rgb(0,255,0) 180px,
+    rgb(0,255,255) 240px,
+    rgb(0,128,255) 300px,
+    rgb(128,0,255) 360px,
+    rgb(255,0,255) 420px,
+    rgb(255,0,0) 480px
+  );
+}
+
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#050505;
+  color:#fff;
+  overflow-x:hidden;
+}
+
+body{
+  background:
+  radial-gradient(circle at 35% 25%, rgba(255,255,255,.06), transparent 55%),
+  #050505;
+}
+
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:var(--rainbow);
+  background-size:var(--period) 100%;
+  animation:flow 4s linear infinite;
+  mix-blend-mode:screen;
+}
+
+body::before{
+  opacity:.9;
+  -webkit-mask-image:repeating-linear-gradient(90deg,#000 0 1px,transparent 1px 42px);
+  mask-image:repeating-linear-gradient(90deg,#000 0 1px,transparent 1px 42px);
+}
+
+body::after{
+  opacity:.7;
+  -webkit-mask-image:repeating-linear-gradient(0deg,#000 0 1px,transparent 1px 42px);
+  mask-image:repeating-linear-gradient(0deg,#000 0 1px,transparent 1px 42px);
+}
+
+@keyframes flow{
+  0%{background-position:0 50%}
+  100%{background-position:480px 50%}
+}
+
+.site{
+  position:relative;
+  z-index:2;
+  max-width:1100px;
+  margin:auto;
+  padding:55px 18px;
+}
+
+header{
+  text-align:center;
+  margin-bottom:22px;
+}
+
+h1{
+  margin:0;
+  font-size:clamp(34px,5vw,56px);
+  font-weight:900;
+  background:var(--rainbow);
+  background-size:var(--period) 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:flow 4s linear infinite;
+}
+
+.subtitle{
+  margin-top:8px;
+  font-weight:800;
+  opacity:.95;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:520px){
+  .grid{grid-template-columns:1fr}
+}
+
+.rgb-btn{
+  position:relative;
+  border:0;
+  cursor:pointer;
+  border-radius:16px;
+  padding:16px;
+  min-height:62px;
+  background:transparent;
+  overflow:hidden;
+  box-shadow:0 14px 40px rgba(0,0,0,.55);
+  transition:.2s;
+}
+
+.rgb-btn:hover{
+  transform:translateY(-2px);
+}
+
+.rgb-btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--rainbow);
+}
+
+.rgb-btn::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:14px;
+  background:#0a0a0a;
+}
+
+.rgb-btn span{
+  position:relative;
+  z-index:2;
+  font-weight:900;
+  background:var(--rainbow);
+  background-size:var(--period) 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:flow 4s linear infinite;
+}
+
+.bottom-cta{
+  margin-top:28px;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.terrahash-btn{
+  width:min(100%,340px);
+  min-height:84px;
+  font-size:34px;
+  border-radius:24px;
+}
+
+footer{
+  margin-top:22px;
+  text-align:center;
+  opacity:.8;
+  font-size:12px;
+}
+
+#annBadge{
+  display:none;
+  position:absolute;
+  top:6px;
+  left:6px;
+  width:12px;
+  height:12px;
+  background:red;
+  border-radius:50%;
+  z-index:4;
+  box-shadow:0 0 10px red;
+}
+
+/* popup */
+#popup{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.82);
+  z-index:9999;
+  padding:30px;
+  overflow:auto;
+}
+
+#popupBox{
+  max-width:720px;
+  margin:auto;
+  background:#111;
+  padding:20px;
+  border-radius:20px;
+}
+
+.closeBtn{
+  padding:10px 14px;
+  border:0;
+  cursor:pointer;
+  border-radius:10px;
+  font-weight:700;
+  margin-bottom:15px;
+}
+
+.annCard{
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.annCard img{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+  vertical-align:middle;
+  margin-right:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="site">
+
+<header>
+<h1>gams.lol</h1>
+<div class="subtitle">By MarkyBadlyMC</div>
+</header>
+
+<main class="grid">
+
+<button class="rgb-btn" data-url="https://markycraft.vercel.app"><span>Minecraft (1.12.2)</span></button>
+<button class="rgb-btn" data-url="/skins"><span>Skins</span></button>
+<button class="rgb-btn" data-url="https://markydeltarune.vercel.app"><span>Deltarune</span></button>
+<button class="rgb-btn" data-url="https://markybored.vercel.app"><span>Bored?</span></button>
+
+<button class="rgb-btn" data-url="https://marky-deltatraveler.vercel.app"><span>Deltatraveler</span></button>
+<button class="rgb-btn" data-url="https://marky-guntale.vercel.app"><span>UnderTale Yellow</span></button>
+
+<button class="rgb-btn" id="pollBtn"><span>Polls</span></button>
+
+<button class="rgb-btn" id="annBtn">
+<span>Announcements (Check Daily)</span>
+<b id="annBadge"></b>
+</button>
+
+<button class="rgb-btn" data-url="https://www.youtube.com/@markybadlymc"><span>My YT Channel</span></button>
+<button class="rgb-btn" data-url="https://discord.gg/AwcGfxdGwe"><span>My Discord</span></button>
+<button class="rgb-btn" data-url="https://www.youtube.com/watch?v=kCNHDbA2PAk&t=231s"><span>The REAL Unstable SMP Experience</span></button>
+<button class="rgb-btn" data-url="https://www.youtube.com/watch?v=aloZyqhhhlY"><span>How I Beat DrDonut!</span></button>
+
+</main>
+
+<div class="bottom-cta">
+
+<button class="rgb-btn terrahash-btn" data-url="https://markytuffclient.vercel.app">
+<span>TUFF CLIENT</span>
+</button>
+
+<button class="rgb-btn terrahash-btn" data-url="https://markymodernclient.vercel.app">
+<span>MODERN CLIENT</span>
+</button>
+
+</div>
+
+<footer>© <span id="year"></span> gams.lol</footer>
+
+</div>
+
+<div id="popup">
+<div id="popupBox">
+<button class="closeBtn" onclick="closePopup()">Close</button>
+<div id="announcementsList"></div>
+</div>
+</div>
+
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+
+const SUPABASE_URL = "https://ojgvrruxmaeqmcjqcikf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_5S5gO8060EWl4Q3N6YqxXg_kl6_-ptp";
+
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+/* button clicks */
+document.addEventListener("click", function(e){
+
+  const btn = e.target.closest(".rgb-btn");
+  if(!btn) return;
+
+  if(btn.id === "annBtn"){
+    openAnnouncements();
+    return;
+  }
+
+  if(btn.id === "pollBtn"){
+    openPolls();
+    return;
+  }
+
+  const url = btn.dataset.url;
+  if(url){
+    window.open(url,"_blank");
+  }
+
+});
+
+/* announcements */
+async function openAnnouncements(){
+
+  document.getElementById("popup").style.display="block";
+
+  const wrap=document.getElementById("announcementsList");
+  wrap.innerHTML="Loading...";
+
+  const {data,error}=await db
+  .from("announcements")
+  .select("*")
+  .order("created_at",{ascending:false});
+
+  if(error || !data.length){
+    wrap.innerHTML="No announcements yet.";
+    return;
+  }
+
+  wrap.innerHTML="";
+
+  data.forEach(a=>{
+    wrap.innerHTML+=`
+    <div class="annCard">
+      <div><img src="${a.pfp || ''}"><b>${a.author || 'Unknown'}</b></div>
+      <h3>${a.title || ''}</h3>
+      <p>${a.content || ''}</p>
+      <small>${new Date(a.created_at).toLocaleString()}</small>
+    </div>
+    `;
+  });
+
+  localStorage.setItem("seenAnnouncement",data[0].created_at);
+  document.getElementById("annBadge").style.display="none";
+}
+
+/* polls */
+async function openPolls(){
+
+  document.getElementById("popup").style.display="block";
+
+  const wrap=document.getElementById("announcementsList");
+  wrap.innerHTML="Loading poll...";
+
+  const {data,error}=await db
+  .from("polls")
+  .select("*")
+  .order("created_at",{ascending:false})
+  .limit(1);
+
+  if(error || !data.length){
+    wrap.innerHTML="No polls yet.";
+    return;
+  }
+
+  const p=data[0];
+
+  wrap.innerHTML=`
+    <h2>${p.question}</h2>
+
+    <button class="rgb-btn" onclick="vote('${p.id}',1)" style="width:100%;margin:10px 0;">
+      <span>${p.option1}</span>
+    </button>
+
+    <button class="rgb-btn" onclick="vote('${p.id}',2)" style="width:100%;margin:10px 0;">
+      <span>${p.option2}</span>
+    </button>
+
+    <button class="rgb-btn" onclick="vote('${p.id}',3)" style="width:100%;margin:10px 0;">
+      <span>${p.option3}</span>
+    </button>
+
+    <button class="rgb-btn" onclick="vote('${p.id}',4)" style="width:100%;margin:10px 0;">
+      <span>${p.option4}</span>
+    </button>
+
+    <hr style="margin:20px 0;opacity:.2;">
+
+    <p>${p.option1}: ${p.votes1}</p>
+    <p>${p.option2}: ${p.votes2}</p>
+    <p>${p.option3}: ${p.votes3}</p>
+    <p>${p.option4}: ${p.votes4}</p>
+  `;
+}
+
+async function vote(id,num){
+
+  const key="vote_"+id;
+
+  if(localStorage.getItem(key)){
+    alert("You already voted.");
+    return;
+  }
+
+  const {data}=await db
+  .from("polls")
+  .select("*")
+  .eq("id",id)
+  .single();
+
+  let row={};
+
+  if(num===1) row.votes1=(data.votes1||0)+1;
+  if(num===2) row.votes2=(data.votes2||0)+1;
+  if(num===3) row.votes3=(data.votes3||0)+1;
+  if(num===4) row.votes4=(data.votes4||0)+1;
+
+  await db.from("polls").update(row).eq("id",id);
+
+  localStorage.setItem(key,"yes");
+
+  openPolls();
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display="none";
+}
+
+/* red badge */
+async function checkAnnouncements(){
+
+  const {data,error}=await db
+  .from("announcements")
+  .select("*")
+  .order("created_at",{ascending:false})
+  .limit(1);
+
+  if(error || !data.length) return;
+
+  const newest=data[0].created_at;
+  const seen=localStorage.getItem("seenAnnouncement");
+
+  if(seen !== newest){
+    document.getElementById("annBadge").style.display="block";
+  }
+}
+
+checkAnnouncements();
+</script>
+
+</body>
+</html>
